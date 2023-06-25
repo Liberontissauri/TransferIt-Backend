@@ -38,7 +38,7 @@ export default class UserModel extends Model implements UserShape {
             type: "object",
             required: ["username", "hash", "email"],
             properties: {
-                id: {type: "integer"},
+                id: {type: "string"},
                 username: {type: "string"},
                 hash: {type: "string"},
                 email: {type: "string"},
