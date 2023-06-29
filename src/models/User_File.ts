@@ -2,10 +2,9 @@ import { UUID } from "crypto";
 
 import { Model, ModelObject } from "objection";
 
-class User_File extends Model {
+export default class UserFileModel extends Model {
     id!: UUID
     user!: UUID
-    file_size!: bigint
     file_name!: string
     file_description!: string
     created_at!: string
@@ -18,14 +17,29 @@ class User_File extends Model {
         return 'id';
     }
 
+    static async createFile(user: UUID, file_name: string, file_description: string) {
+        return this.query().insert({
+            user, file_name, file_description
+        }).returning("id")
+    }
+
+    static async getFileById(id: UUID) {
+        const file = await this.query().findById(id)
+        return file
+    }
+
+    static async getFilesFromUser(user_id: UUID) {
+        const files = await this.query().where("user", "=", user_id)
+        return files
+    }
+
     static get jsonSchema() {
         return {
             type: "object",
-            required: ["user", "file_size", "file_name", "file_description"],
-            propreties: {
+            required: ["user", "file_name", "file_description"],
+            properties: {
                 id: {type: "string"},
                 user: {type: "string"},
-                file_size: {type: "bigint"},
                 file_name: {type: "string"},
                 file_description: {type: "string"},
                 created_at: {type: "string"},
@@ -35,4 +49,4 @@ class User_File extends Model {
     }
 }
 
-export type fileShape = ModelObject<User_File>
+export type fileShape = ModelObject<UserFileModel>

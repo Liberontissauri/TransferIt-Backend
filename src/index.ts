@@ -44,7 +44,7 @@ app.use(session({
 }))
 app.use(passport.session())
 app.use("/api/auth/", require("./auth"))
-
+app.use("/api/files/", require("./files"))
 
 app.get("/api/profile", (req, res) => {
     const user:any = req.user
