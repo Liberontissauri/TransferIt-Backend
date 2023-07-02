@@ -47,7 +47,7 @@ router.post("/signup", async (req, res) => {
 })
 router.post("/login", passport.authenticate("local", {failureMessage: true}), (req, res) => {
     if(!process.env["POST_LOGIN_URL"]) return res.status(500).send({message: "POST_LOGIN_URL not set"})
-    return res.send({message: "Login successful", redirect: "/dashboard"})
+    return res.send({message: "Login successful", redirect: process.env["POST_LOGIN_URL"]})
 })
 router.post("/logout", (req, res, next) => {
     req.logOut((err) => {

@@ -1,4 +1,5 @@
 require("dotenv").config()
+import logger from "./logs"
 const PORT = process.env.PORT || 3001
 
 import express from "express"
@@ -32,6 +33,7 @@ objection.Model.knex(knex({
     client: "pg",
     connection: process.env["DATABASE_URL"]
 }))
+logger.info("DB Initialized")
 
 app.use(session({
     secret: process.env.SESSION_SECRET,
@@ -43,18 +45,24 @@ app.use(session({
     })
 }))
 app.use(passport.session())
+logger.info("Session Initialized")
 app.use("/api/auth/", require("./auth"))
+logger.info("Auth Initialized")
 app.use("/api/files/", require("./files"))
+logger.info("Files Initialized")
 
 app.get("/api/profile", (req, res) => {
     const user:any = req.user
-    if(user) return res.send({
+    if(user) {
+        logger.debug(`User ${user.id} requested their profile successfully`)
+        return res.send({
         username: user.username,
         email: user.email,
         storage_limit: user.storage_limit,
         created_at: user.created_at,
         updated_at: user.created_at
-    })
+    })}
+    logger.warn("/api/profile GET attempt, but not logged in")
     
     return res.status(401).send({
         message: "not logged in"

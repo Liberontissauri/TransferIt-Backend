@@ -4,22 +4,19 @@ const upload = multer({ dest: 'temp/' })
 import UserFileModel from "./models/User_File"
 import fs from "fs"
 import validator from 'validator';
-
+import logger from "./logs"
 import Minio from "minio";
 const _minio = require("minio");
+
+// Config
 
 if (!process.env["MINIO_CLIENT"]) throw Error("Please Define MINIO_CLIENT in your .env")
 if (!process.env["MINIO_SECRET"]) throw Error("Please Define MINIO_SECRET in your .env")
 if (!process.env["MINIO_ENDPOINT"]) throw Error("Please Define MINIO_ENDPOINT in your .env")
 if (!process.env["MINIO_USE_SSL"]) throw Error("Please Define MINIO_USE_SSL in your .env")
 
-let USE_SSL
-if (process.env["MINIO_USE_SSL"] == "false") {
-    USE_SSL = false
-}
-else {
-    USE_SSL = true
-}
+let USE_SSL = true
+if (process.env["MINIO_USE_SSL"] == "false") USE_SSL = false
 
 const minioClient: Minio.Client = new _minio.Client({
     endPoint: 'localhost',
@@ -28,8 +25,10 @@ const minioClient: Minio.Client = new _minio.Client({
     accessKey: process.env["MINIO_CLIENT"],
     secretKey: process.env["MINIO_SECRET"]
 });
-
 const BUCKET = "transferit-files"
+logger.info("Bucket Initialized")
+
+// Routes
 
 const router = express.Router()
 
@@ -74,7 +73,6 @@ router.get("/", async (req, res) => {
             updated_at: file.updated_at
         })
     }
-    console.log(response_files)
     res.send(response_files)
 })
 router.get("/:file_id", async (req, res) => {
@@ -97,6 +95,8 @@ router.get("/:file_id", async (req, res) => {
         updated_at: file.updated_at
     })
 })
+
+// General Functions
 
 async function getFileSize(id: string) {
     let err, data = await minioClient.statObject(BUCKET, id)
