@@ -23,12 +23,12 @@ export default class UserFileModel extends Model {
         }).returning("id")
     }
 
-    static async getFileById(id: UUID) {
+    static async getFileById(id: string) {
         const file = await this.query().findById(id)
         return file
     }
 
-    static async getFilesFromUser(user_id: UUID) {
+    static async getFilesFromUser(user_id: string) {
         const files = await this.query().where("user", "=", user_id)
         return files
     }
