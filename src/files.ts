@@ -4,29 +4,10 @@ const upload = multer({ dest: 'temp/' })
 import UserFileModel from "./models/User_File"
 import fs from "fs"
 import validator from 'validator';
-import logger from "./logs"
-import Minio from "minio";
-const _minio = require("minio");
 
-// Config
-
-if (!process.env["MINIO_CLIENT"]) throw Error("Please Define MINIO_CLIENT in your .env")
-if (!process.env["MINIO_SECRET"]) throw Error("Please Define MINIO_SECRET in your .env")
-if (!process.env["MINIO_ENDPOINT"]) throw Error("Please Define MINIO_ENDPOINT in your .env")
-if (!process.env["MINIO_USE_SSL"]) throw Error("Please Define MINIO_USE_SSL in your .env")
-
-let USE_SSL = true
-if (process.env["MINIO_USE_SSL"] == "false") USE_SSL = false
-
-const minioClient: Minio.Client = new _minio.Client({
-    endPoint: 'localhost',
-    port: 9000,
-    useSSL: USE_SSL,
-    accessKey: process.env["MINIO_CLIENT"],
-    secretKey: process.env["MINIO_SECRET"]
-});
 const BUCKET = "transferit-files"
-logger.info("Bucket Initialized")
+import minioClient from "./db/minio_init"
+import { getStorageFromFileList } from "./utils/files"
 
 // Routes
 
@@ -39,15 +20,8 @@ router.post("/upload", upload.single("file"), async (req, res) => {
     const user: any = req.user
 
     const files = await UserFileModel.getFilesFromUser(user.id)
-    let used_storage = 0
-    files.forEach(file => {
-        const metadata = minioClient.statObject(BUCKET, file.id, (err: Error | null, data: Minio.BucketItemStat) => {
-            if(err) throw err
-            const file_size = data.size
-            if(!file_size) throw Error("File in db does not have a corresponding file in bucket")
-            used_storage += file_size
-        })
-    })
+    let used_storage = await getStorageFromFileList(files)
+
     if (used_storage + req.file.size > user.storage_limit) return res.status(400).send({message: "upload exceeds storage limit"})
     const file = await UserFileModel.createFile(user.id, req.file.originalname, "")
     const read_stream = fs.createReadStream(req.file.destination + req.file.filename)
@@ -102,7 +76,6 @@ async function getFileSize(id: string) {
     let err, data = await minioClient.statObject(BUCKET, id)
     if(err) throw err
     if(!data) throw Error("File in db does not have a corresponding file in bucket")
-    console.log(data.size)
     return data.size
 }
 

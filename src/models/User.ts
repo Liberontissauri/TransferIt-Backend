@@ -6,7 +6,7 @@ export default class UserModel extends Model implements UserShape {
     username!: string
     hash!: string
     email!: string
-    storage_limit!: bigint
+    storage_limit!: number
     created_at!: string
     updated_at!: string
 
@@ -42,7 +42,7 @@ export default class UserModel extends Model implements UserShape {
                 username: {type: "string"},
                 hash: {type: "string"},
                 email: {type: "string"},
-                storage_limit: {type: "bigInt"},
+                storage_limit: {type: "number"},
                 created_at: {type: "string"},
                 updated_at: {type: "string"},
             }

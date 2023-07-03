@@ -3,6 +3,8 @@ import passport from "passport"
 import {Strategy as LocalStrategy, VerifyFunction} from "passport-local"
 import UserModel from "./models/User"
 import bcrypt from "bcrypt"
+import UserFileModel from "./models/User_File"
+import { getStorageFromFileList } from "./utils/files"
 
 const verify: VerifyFunction = async function verify(usernameOrEmail, password, done) {
     let user = await UserModel.getUserByUsername(usernameOrEmail)
@@ -24,7 +26,9 @@ passport.serializeUser((user: any, done: Function) => {
 passport.deserializeUser((user: any, done: Function) => {
     process.nextTick(async () => {
         const full_user = await UserModel.getUserById(user.id)
-        return done(null, full_user);
+        const user_files = await UserFileModel.getFilesFromUser(user.id)
+        const used_storage = await getStorageFromFileList(user_files)
+        return done(null, {...full_user, used_storage});
     });
 });
 

@@ -7,8 +7,8 @@ export default class UserFileModel extends Model {
     user!: UUID
     file_name!: string
     file_description!: string
-    created_at!: string
-    updated_at!: string
+    created_at!: Date
+    updated_at!: Date
 
     static get tableName() {
         return "files"
