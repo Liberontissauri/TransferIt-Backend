@@ -26,7 +26,7 @@ router.post("/upload", upload.single("file"), async (req, res) => {
     const file = await UserFileModel.createFile(user.id, req.file.originalname, "")
     const read_stream = fs.createReadStream(req.file.destination + req.file.filename)
     minioClient.putObject(BUCKET, file.id, read_stream)
-    res.status(200).send()
+    res.status(302).redirect("/dashboard")
 })
 router.get("/", async (req, res) => {
     if(!req.user) return res.status(401).send({message: "not logged in"})
